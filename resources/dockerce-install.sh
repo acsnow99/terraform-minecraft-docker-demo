@@ -16,5 +16,5 @@ mkdir ~/minecraft
 mv /tmp/server.properties ~/minecraft/server.properties
 
 #sudo docker pull ${docker-image}
-sudo docker run -d --name mc -e EULA=TRUE -e VERSION=${release} -e TYPE=${server-type} -e FTB_SERVER_MOD=${ftb-modpack} -v ~/minecraft:/data ${docker-image}
+sudo docker run -d --name mc -p 25565:25565 -e EULA=TRUE -e VERSION=${release} -e TYPE=${server-type} -e FTB_SERVER_MOD=${ftb-modpack} -v ~/minecraft:/data ${docker-image}
 
