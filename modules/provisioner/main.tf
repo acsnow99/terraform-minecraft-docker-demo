@@ -58,27 +58,10 @@ resource "null_resource" "install-dependencies" {
     }
 }
 
-resource "null_resource" "restart" {
-
-    depends_on = [null_resource.install-dependencies]
-
-    connection {
-            type = "ssh"
-            host = "${var.instance-ip}"
-            user = "${var.ssh-user}"
-            private_key = "${file("${var.ssh-private-key}")}"
-    }
-
-    provisioner "remote-exec" {
-        inline = [
-            "sudo docker stop mc",
-            "sudo docker start mc",
-        ]
-    }
-
-}
 
 resource "null_resource" "cleanup" {
+    depends_on = [null_resource.install-dependencies]
+
     provisioner "local-exec" {
         command = "rm ./resources/server.properties.provisioned ./resources/boot-script-provisioned.sh"
     }
