@@ -11,7 +11,7 @@ variable "project" {
     
 }
 variable "bootscript" {
-    default = "./resources/dockerce-install.sh"
+    default = "./resources/server-setup.sh"
 }
 variable "ssh-private-key" {
 
@@ -46,7 +46,12 @@ variable "server-type" {
 variable "ftb-modpack" {
     default = "https://www.feed-the-beast.com/projects/ftb-presents-direwolf20-1-12/files/2690320"
 }
+variable "exists" {
+    default = "0"
+}
+variable "existing-world" {
 
+}
 
 variable "docker-image" {
     type = "map"

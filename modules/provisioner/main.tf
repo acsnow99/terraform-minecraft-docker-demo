@@ -2,7 +2,7 @@ data "template_file" "bootscript" {
     template = "${file("${var.bootscript}")}"
     
     vars = {
-        docker-image = "itzg/minecraft-server"
+        docker-image = "${lookup("${var.docker-image}", "${var.java}")}"
         #${lookup("${var.docker-image}", "${var.java}")}
         release = "${var.release}"
         server-type = "${var.server-type}"
@@ -32,6 +32,87 @@ resource "null_resource" "provision-files" {
     }
 }
 
+
+
+resource "null_resource" "add-world" {
+
+    count = "${var.exists}"
+
+    depends_on = [null_resource.provision-files]
+
+    connection {
+            type = "ssh"
+            host = "${var.instance-ip}"
+            user = "${var.ssh-user}"
+            private_key = "${file("${var.ssh-private-key}")}"
+    }
+
+    provisioner "file" {
+        source = "${var.existing-world}"
+        destination = "/tmp/db"
+    }
+
+}
+
+resource "null_resource" "bedrock-world-setup" {
+    
+    count = "${var.bedrock}"
+
+    depends_on = ["null_resource.add-world", "null_resource.install-dependencies"]
+
+    connection {
+            type = "ssh"
+            host = "${var.instance-ip}"
+            user = "${var.ssh-user}"
+            private_key = "${file("${var.ssh-private-key}")}"
+    }
+
+    provisioner "remote-exec" {
+        inline = [
+            "rm -r ~/minecraft/worlds/${var.worldname}/db",
+            "mkdir ~/minecraft/worlds/${var.worldname}/db",
+            "cp -r /tmp/db/* ~/minecraft/worlds/${var.worldname}/db",
+            "chmod -R 755 ~/minecraft/worlds/${var.worldname}/db",
+            "sudo docker stop mc",
+            "sudo docker start mc",
+        ]
+    }
+
+}
+
+resource "null_resource" "java-world-setup" {
+    
+    count = "${var.java}"
+
+    depends_on = ["null_resource.add-world", "null_resource.install-dependencies"]
+    
+    connection {
+            type = "ssh"
+            host = "${var.instance-ip}"
+            user = "${var.ssh-user}"
+            private_key = "${file("${var.ssh-private-key}")}"
+    }
+
+    provisioner "remote-exec" {
+        inline = [
+            "rm -r ~/minecraft/${var.worldname}",
+            "mkdir ~/minecraft/${var.worldname}",
+            "cp -r /tmp/db/* ~/minecraft/${var.worldname}",
+            "chmod -R 755 ~/minecraft/${var.worldname}",
+            "rm -r ~/minecraft/FeedTheBeast/${var.worldname}",
+            "mkdir ~/minecraft/FeedTheBeast",
+            "mkdir ~/minecraft/FeedTheBeast/${var.worldname}",
+            "cp -r /tmp/db/* ~/minecraft/FeedTheBeast/${var.worldname}",
+            "chmod -R 777 ~/minecraft/FeedTheBeast",
+            "sudo docker stop mc",
+            "sudo docker start mc",
+        ]
+    }
+
+}
+
+
+
 resource "null_resource" "install-dependencies" {
 
     depends_on = [null_resource.provision-files]
@@ -57,7 +138,6 @@ resource "null_resource" "install-dependencies" {
         ]
     }
 }
-
 
 resource "null_resource" "cleanup" {
     depends_on = [null_resource.install-dependencies]

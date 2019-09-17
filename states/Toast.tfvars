@@ -36,15 +36,13 @@ gamemode = 0
 worldname = "GCP"
 
 # version of Minecraft to deploy(if using Bedrock, this must be changed to 1.12.0.28 or an earlier Bedrock release)
-release = "1.14.4"
+release = "1.12.2"
 
-# supports VANILLA and FTB
-server-type = "VANILLA"
+# support VANILLA and FTB
+server-type = "FTB"
 
-# URL of modpack to install when server-type is FTB. Make sure it supports the version of Minecraft put in 'release' var
+# URL of modpack to install when server-type is FTB
 ftb-modpack = "https://www.feed-the-beast.com/projects/ftb-presents-direwolf20-1-12/files/2690320"
 
-# 0 for a new world, 1 to use a world that is on your local computer
-exists = "0"
-# Path to an existing world file. Point to the directory titled 'db' in the world files for bedrock
-existing-world = ""
+exists = "1"
+existing-world = "~/Desktop/Toast"

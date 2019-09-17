@@ -50,4 +50,6 @@ module "provisioner" {
   release = "${var.release}"
   server-type = "${var.server-type}"
   ftb-modpack = "${var.ftb-modpack}"
+  exists = "${var.exists}"
+  existing-world = "${var.existing-world}"
 }

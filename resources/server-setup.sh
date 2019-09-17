@@ -11,7 +11,7 @@ sudo curl -L --fail https://github.com/docker/compose/releases/download/1.24.0/r
 # executable permissions for compose
 sudo chmod +x /usr/local/bin/docker-compose
 
-mkdir ~/minecraft
+mkdir ~/minecraft || true
 
 mv /tmp/server.properties ~/minecraft/server.properties
 

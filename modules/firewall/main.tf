@@ -1,14 +1,3 @@
-resource "google_compute_firewall" "ssh" {
-    name = "${var.instance-name}-ssh"
-    network = "${var.network}"
-    
-    allow {
-        protocol = "tcp"
-        ports    = ["22"]
-    }
-
-}
-
 resource "google_compute_firewall" "java" {
     count = "${var.java}"
 
@@ -17,7 +6,7 @@ resource "google_compute_firewall" "java" {
 
     allow {
         protocol = "tcp"
-        ports = ["25565"]
+        ports = ["25565", "22"]
     }
 
 }
@@ -27,6 +16,11 @@ resource "google_compute_firewall" "bedrock" {
 
     name = "${var.instance-name}-minecraft"
     network = "${var.network}"
+
+    allow {
+        protocol = "tcp"
+        ports    = ["22"]
+    }
 
     allow {
         protocol = "udp"
