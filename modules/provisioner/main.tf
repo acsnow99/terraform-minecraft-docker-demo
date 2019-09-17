@@ -22,6 +22,7 @@ data "template_file" "server-properties" {
 
 
 resource "null_resource" "provision-files" {
+
     provisioner "local-exec" {
         command = "echo '${data.template_file.bootscript.rendered}' > ./resources/boot-script-provisioned.sh"
     }
@@ -30,11 +31,14 @@ resource "null_resource" "provision-files" {
     provisioner "local-exec" {
         command = "echo '${data.template_file.server-properties.rendered}' > ./resources/server.properties.provisioned"
     }
+
 }
 
 
 
 resource "null_resource" "add-world" {
+
+# copies over existing world files
 
     count = "${var.exists}"
 
@@ -55,7 +59,9 @@ resource "null_resource" "add-world" {
 }
 
 resource "null_resource" "bedrock-world-setup" {
-    
+
+# sets up directory for the Minecraft server so the world files are accepted correctly by the Docker container
+
     count = "${var.bedrock}"
 
     depends_on = ["null_resource.add-world", "null_resource.install-dependencies"]
@@ -82,6 +88,8 @@ resource "null_resource" "bedrock-world-setup" {
 
 resource "null_resource" "java-world-setup" {
     
+# sets up directory for the Minecraft server so the world files are accepted correctly by the Docker container
+
     count = "${var.java}"
 
     depends_on = ["null_resource.add-world", "null_resource.install-dependencies"]
@@ -99,11 +107,13 @@ resource "null_resource" "java-world-setup" {
             "mkdir ~/minecraft/${var.worldname}",
             "cp -r /tmp/db/* ~/minecraft/${var.worldname}",
             "chmod -R 755 ~/minecraft/${var.worldname}",
+            # sets up FTB directory as well, just in case
             "rm -r ~/minecraft/FeedTheBeast/${var.worldname}",
             "mkdir ~/minecraft/FeedTheBeast",
             "mkdir ~/minecraft/FeedTheBeast/${var.worldname}",
             "cp -r /tmp/db/* ~/minecraft/FeedTheBeast/${var.worldname}",
             "chmod -R 777 ~/minecraft/FeedTheBeast",
+
             "sudo docker stop mc",
             "sudo docker start mc",
         ]
@@ -114,6 +124,10 @@ resource "null_resource" "java-world-setup" {
 
 
 resource "null_resource" "install-dependencies" {
+
+# the script provided from "var.bootscript" is run here
+# the default script installs Docker, sets up a directory to volume mount, and starts the container
+# from the itzg/minecraft-server or itzg/minecraft-bedrock-server image
 
     depends_on = [null_resource.provision-files]
 

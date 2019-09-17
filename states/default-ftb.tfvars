@@ -43,3 +43,8 @@ server-type = "FTB"
 
 # URL of modpack to install when server-type is FTB
 ftb-modpack = "https://www.feed-the-beast.com/projects/ftb-presents-direwolf20-1-12/files/2690320"
+
+# 0 for a new world, 1 to use a world that is on your local computer
+exists = "0"
+# Path to an existing world file. Point to the directory titled 'db' in the world files for bedrock
+existing-world = ""
