@@ -19,6 +19,14 @@ data "template_file" "server-properties" {
     }
 }
 
+data "template_file" "world-setup" {
+    template = "${file("${lookup("${var.world-setup-file}", "${var.java}")}")}"
+
+    vars = {
+        worldname = "${var.worldname}"
+    }
+}
+
 
 
 resource "null_resource" "provision-files" {
@@ -30,6 +38,10 @@ resource "null_resource" "provision-files" {
 
     provisioner "local-exec" {
         command = "echo '${data.template_file.server-properties.rendered}' > ./resources/server.properties.provisioned"
+    }
+
+    provisioner "local-exec" {
+        command = "echo '${data.template_file.world-setup.rendered}' > ./resources/world-setup-provisioned.sh"
     }
 
 }
@@ -58,11 +70,11 @@ resource "null_resource" "add-world" {
 
 }
 
-resource "null_resource" "bedrock-world-setup" {
+resource "null_resource" "world-setup" {
 
 # sets up directory for the Minecraft server so the world files are accepted correctly by the Docker container
 
-    count = "${var.bedrock}"
+    count = "${var.exists}"
 
     depends_on = ["null_resource.add-world", "null_resource.install-dependencies"]
 
@@ -73,54 +85,18 @@ resource "null_resource" "bedrock-world-setup" {
             private_key = "${file("${var.ssh-private-key}")}"
     }
 
-    provisioner "remote-exec" {
-        inline = [
-            "rm -r ~/minecraft/worlds/${var.worldname}/db",
-            "mkdir ~/minecraft/worlds/${var.worldname}/db",
-            "cp -r /tmp/db/* ~/minecraft/worlds/${var.worldname}/db",
-            "chmod -R 755 ~/minecraft/worlds/${var.worldname}/db",
-            "sudo docker stop mc",
-            "sudo docker start mc",
-        ]
-    }
-
-}
-
-resource "null_resource" "java-world-setup" {
-    
-# sets up directory for the Minecraft server so the world files are accepted correctly by the Docker container
-
-    count = "${var.java}"
-
-    depends_on = ["null_resource.add-world", "null_resource.install-dependencies"]
-    
-    connection {
-            type = "ssh"
-            host = "${var.instance-ip}"
-            user = "${var.ssh-user}"
-            private_key = "${file("${var.ssh-private-key}")}"
+    provisioner "file" {
+        source = "./resources/world-setup-provisioned.sh"
+        destination = "/tmp/world-setup-provisioned.sh"
     }
 
     provisioner "remote-exec" {
         inline = [
-            "rm -r ~/minecraft/${var.worldname}",
-            "mkdir ~/minecraft/${var.worldname}",
-            "cp -r /tmp/db/* ~/minecraft/${var.worldname}",
-            "chmod -R 755 ~/minecraft/${var.worldname}",
-            # sets up FTB directory as well, just in case
-            "rm -r ~/minecraft/FeedTheBeast/${var.worldname}",
-            "mkdir ~/minecraft/FeedTheBeast",
-            "mkdir ~/minecraft/FeedTheBeast/${var.worldname}",
-            "cp -r /tmp/db/* ~/minecraft/FeedTheBeast/${var.worldname}",
-            "chmod -R 777 ~/minecraft/FeedTheBeast",
-
-            "sudo docker stop mc",
-            "sudo docker start mc",
+            "sudo bash /tmp/world-setup-provisioned.sh",
         ]
     }
 
 }
-
 
 
 resource "null_resource" "install-dependencies" {
@@ -148,7 +124,7 @@ resource "null_resource" "install-dependencies" {
     provisioner "remote-exec" {
         inline = [
             "sudo chmod 755 /tmp/run-command.sh",
-            "/tmp/run-command.sh",
+            "sudo bash /tmp/run-command.sh",
         ]
     }
 }

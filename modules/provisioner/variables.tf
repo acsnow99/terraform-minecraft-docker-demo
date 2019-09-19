@@ -67,3 +67,11 @@ variable "properties-file" {
         "1" = "./resources/java.server.properties"
     }
 }
+
+variable "world-setup-file" {
+    type = "map"
+    default = {
+        "0" = "./resources/bedrock-world-setup.sh"
+        "1" = "./resources/java-world-setup.sh"
+    }
+}

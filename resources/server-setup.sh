@@ -13,8 +13,10 @@ sudo chmod +x /usr/local/bin/docker-compose
 
 mkdir ~/minecraft || true
 
-mv /tmp/server.properties ~/minecraft/server.properties
+cp /tmp/server.properties ~/minecraft/server.properties || true
 
-#sudo docker pull ${docker-image}
+
+sudo docker stop mc || true
+sudo docker rm mc || true
 sudo docker run -d --name mc -p 25565:25565 -e EULA=TRUE -e VERSION=${release} -e TYPE=${server-type} -e FTB_SERVER_MOD=${ftb-modpack} -v ~/minecraft:/data ${docker-image}
 
